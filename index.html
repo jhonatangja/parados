@@ -84,14 +84,13 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 20px;
-            align-items: end; /* Alinha inputs na base */
+            align-items: end;
         }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label {
             display: block; font-weight: 600; margin-bottom: 8px; color: #555;
         }
 
-        /* Estilos específicos para o novo filtro de quantidade */
         .quantity-filter-container {
             display: flex;
             gap: 10px;
@@ -128,17 +127,13 @@
         
         .stat-card.total { border-left: 5px solid #d9534f; }
         .stat-card.total .stat-card-value { color: #d9534f; }
-        .stat-card.total h3 i { color: #d9534f; }
         
         .stat-card.operator { border-left: 5px solid #0275d8; }
         .stat-card.operator .stat-card-value { color: #0275d8; font-size: 24px; }
-        .stat-card.operator h3 i { color: #0275d8; }
         
         .stat-card.reason { border-left: 5px solid #5bc0de; }
         .stat-card.reason .stat-card-value { color: #5bc0de; font-size: 24px; }
-        .stat-card.reason h3 i { color: #5bc0de; }
         
-        /* GRID DE RANKINGS (Responsivo para 3 colunas) */
         .rankings-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -178,61 +173,33 @@
             padding-bottom: 10px;
         }
         .table-header h2 {
-            margin: 0;
-            padding: 0;
-            border: none;
-            color: #c9302c;
-            font-size: 20px;
+            margin: 0; padding: 0; border: none; color: #c9302c; font-size: 20px;
         }
-        .table-actions {
-            display: flex;
-            gap: 10px;
-        }
+        .table-actions { display: flex; gap: 10px; }
+        
         .action-button {
-            background-color: #0275d8;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background-color 0.2s;
+            background-color: #0275d8; color: white; border: none;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer;
+            font-size: 14px; font-weight: 600; transition: background-color 0.2s;
         }
-        .action-button:hover {
-            background-color: #025aa5;
-        }
-        .action-button.export {
-            background-color: #5cb85c;
-        }
-        .action-button.export:hover {
-            background-color: #449d44;
-        }
-        .action-button i {
-            margin-right: 5px;
-        }
+        .action-button:hover { background-color: #025aa5; }
+        .action-button.export { background-color: #5cb85c; }
+        .action-button.export:hover { background-color: #449d44; }
+        
+        /* Botão WhatsApp */
+        .action-button.whatsapp { background-color: #25D366; }
+        .action-button.whatsapp:hover { background-color: #1ebc59; }
+
+        .action-button i { margin-right: 5px; }
 
         #copyToast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 4px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1001;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 30px;
-            font-size: 17px;
-            opacity: 0;
+            visibility: hidden; min-width: 250px; background-color: #333;
+            color: #fff; text-align: center; border-radius: 4px; padding: 16px;
+            position: fixed; z-index: 1001; left: 50%; transform: translateX(-50%);
+            bottom: 30px; font-size: 17px; opacity: 0;
             transition: opacity 0.3s, visibility 0.3s;
         }
-        #copyToast.show {
-            visibility: visible;
-            opacity: 1;
-        }
+        #copyToast.show { visibility: visible; opacity: 1; }
 
         .loading {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -246,6 +213,90 @@
         }
         .loading p { margin-top: 20px; font-size: 18px; color: #d9534f; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ESTILOS DO MODAL WHATSAPP */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1002;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+        }
+        .modal-body label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        .modal-body select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .modal-body textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 2px solid #f0f2f5;
+            padding-top: 15px;
+        }
+        .btn-close {
+            background-color: #999;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-copy {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-copy:hover { background-color: #1ebc59; }
+        .btn-close:hover { background-color: #777; }
+
     </style>
 </head>
 <body>
@@ -374,6 +425,7 @@
                 <div class="table-header">
                     <h2><i class="fas fa-list-check"></i> Detalhes das Remessas</h2>
                     <div class="table-actions">
+                        <button id="waButton" class="action-button whatsapp"><i class="fab fa-whatsapp"></i> Gerar msg WhatsApp</button>
                         <button id="copyButton" class="action-button"><i class="fas fa-copy"></i> Copiar Remessas</button>
                         <button id="exportButton" class="action-button export"><i class="fas fa-file-excel"></i> Exportar</button>
                     </div>
@@ -399,6 +451,27 @@
         </main>
     </div>
     
+    <div id="waModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fab fa-whatsapp" style="color:#25D366; margin-right:8px;"></i> Gerador de Mensagem</h3>
+            </div>
+            <div class="modal-body">
+                <label for="waDriverSelect">Selecione o Motorista:</label>
+                <select id="waDriverSelect">
+                    <option value="">-- Escolha um motorista --</option>
+                </select>
+                
+                <label for="waMessageText">Mensagem gerada:</label>
+                <textarea id="waMessageText" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="waCloseBtn" class="btn-close">Fechar</button>
+                <button id="waCopyBtn" class="btn-copy"><i class="fas fa-copy"></i> Copiar Mensagem</button>
+            </div>
+        </div>
+    </div>
+
     <div class="loading" id="loading" style="display: none;">
         <div class="spinner"></div>
         <p>Processando dados...</p>
@@ -420,6 +493,8 @@
         let currentFilteredPackages = [];
         let filterAging, filterResponsavel, filterReason, filterCidade;
         
+        let driversDataMap = {}; // Armazena pacotes agrupados por motorista para o modal
+
         let sortStates = {
             responsavelRankTable: { column: 'count', order: 'desc' },
             reasonRankTable: { column: 'count', order: 'desc' },
@@ -437,18 +512,45 @@
         const topResponsavelEl = document.getElementById('topResponsavel');
         const topReasonEl = document.getElementById('topReason');
 
-        // Novos Elementos do Filtro de Quantidade
+        // Filtro de Quantidade
         const qtyOperator = document.getElementById('qtyOperator');
         const qtyValue = document.getElementById('qtyValue');
         
+        // Elementos do Modal WhatsApp
+        const waButton = document.getElementById('waButton');
+        const waModal = document.getElementById('waModal');
+        const waDriverSelect = document.getElementById('waDriverSelect');
+        const waMessageText = document.getElementById('waMessageText');
+        const waCloseBtn = document.getElementById('waCloseBtn');
+        const waCopyBtn = document.getElementById('waCopyBtn');
+
         // --- INICIALIZAÇÃO ---
         loadButton.addEventListener('click', handleFileLoad);
         setupHeaderSorters();
         setupActionButtons();
 
-        // Listeners para o novo filtro
         qtyOperator.addEventListener('change', updateDashboard);
         qtyValue.addEventListener('input', updateDashboard);
+        
+        // Listeners do Modal
+        waButton.addEventListener('click', openWhatsAppModal);
+        waCloseBtn.addEventListener('click', () => waModal.style.display = 'none');
+        waCopyBtn.addEventListener('click', copyWaMessage);
+        waDriverSelect.addEventListener('change', (e) => {
+            const driver = e.target.value;
+            if(driver) {
+                waMessageText.value = generateMessageForDriver(driver);
+            } else {
+                waMessageText.value = "";
+            }
+        });
+        
+        // Fechar modal clicando fora
+        window.onclick = function(event) {
+            if (event.target == waModal) {
+                waModal.style.display = "none";
+            }
+        }
 
         function showLoading(show) {
             loadingSpinner.style.display = show ? 'flex' : 'none';
@@ -593,18 +695,15 @@
         function updateDashboard() {
             if (allPackages.length === 0) return;
 
-            // 1. Coletar valores dos filtros padrão
             const selectedAging = filterAging.getValue(true);
             const selectedResponsaveis = filterResponsavel.getValue(true);
             const selectedReasons = filterReason.getValue(true);
             const selectedCidades = filterCidade.getValue(true);
 
-            // 2. Coletar valores do Filtro de Quantidade
             const op = qtyOperator.value;
             const valStr = qtyValue.value;
             const val = valStr === '' ? null : parseInt(valStr, 10);
 
-            // 3. Primeira Passagem: Aplicar filtros de propriedades (Aging, Motivo, etc)
             let preFilteredPackages = allPackages.filter(pkg => {
                 const agingMatch = selectedAging.length === 0 || selectedAging.includes(pkg.aging);
                 const responsavelMatch = selectedResponsaveis.length === 0 || selectedResponsaveis.includes(pkg.responsavel);
@@ -614,21 +713,17 @@
                 return agingMatch && responsavelMatch && reasonMatch && cidadeMatch;
             });
 
-            // 4. Lógica do Filtro de Quantidade (Volume por Responsável)
             let finalFilteredPackages = preFilteredPackages;
 
             if (val !== null && !isNaN(val)) {
-                // Passo A: Contar quantos pacotes cada responsável tem na seleção atual
                 const countByResp = {};
                 preFilteredPackages.forEach(pkg => {
                     const r = pkg.responsavel;
                     countByResp[r] = (countByResp[r] || 0) + 1;
                 });
 
-                // Passo B: Filtrar a lista mantendo apenas quem atende ao critério de quantidade
                 finalFilteredPackages = preFilteredPackages.filter(pkg => {
                     const count = countByResp[pkg.responsavel] || 0;
-                    
                     if (op === 'equal') return count === val;
                     if (op === 'greater') return count > val;
                     if (op === 'less') return count < val;
@@ -638,7 +733,6 @@
             
             currentFilteredPackages = finalFilteredPackages;
             
-            // 5. Calcular totais para os Rankings e Cards
             const responsavelCounts = {};
             const reasonCounts = {};
             const cityCounts = {}; 
@@ -655,7 +749,6 @@
                 }
             });
 
-            // 6. Renderizar
             renderCards(finalFilteredPackages);
             renderRankTable('responsavelRankTable', responsavelCounts);
             renderRankTable('reasonRankTable', reasonCounts);
@@ -848,7 +941,6 @@
                 showToast("Códigos de remessa copiados!");
             }, (err) => {
                 alert("Erro ao copiar. Tente novamente.");
-                console.error("Erro ao copiar para clipboard: ", err);
             });
         }
         
@@ -860,6 +952,76 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+
+        // --- FUNÇÕES NOVAS PARA WHATSAPP ---
+
+        function openWhatsAppModal() {
+            if (currentFilteredPackages.length === 0) {
+                alert("Não há dados carregados para gerar mensagens.");
+                return;
+            }
+
+            // 1. Agrupar dados visíveis por motorista
+            driversDataMap = {};
+            currentFilteredPackages.forEach(pkg => {
+                const driver = pkg.responsavel;
+                if (!driversDataMap[driver]) {
+                    driversDataMap[driver] = [];
+                }
+                driversDataMap[driver].push(pkg);
+            });
+
+            // 2. Preencher o Select
+            waDriverSelect.innerHTML = '<option value="">-- Escolha um motorista --</option>';
+            const sortedDrivers = Object.keys(driversDataMap).sort();
+            
+            sortedDrivers.forEach(driver => {
+                if(driver && driver !== 'N/A') {
+                    const opt = document.createElement('option');
+                    opt.value = driver;
+                    opt.textContent = `${driver} (${driversDataMap[driver].length} pacotes)`;
+                    waDriverSelect.appendChild(opt);
+                }
+            });
+
+            // 3. Limpar textarea e mostrar modal
+            waMessageText.value = "";
+            waModal.style.display = "flex";
+        }
+
+        function generateMessageForDriver(motorista) {
+            if (!driversDataMap[motorista]) return "";
+
+            const pacotes = driversDataMap[motorista];
+            const quantidade = pacotes.length;
+            
+            // Encontrar o maior número de dias parados
+            const maxDias = Math.max(...pacotes.map(p => p.aging_days));
+            
+            // Listar códigos (um por linha)
+            const listaCodigos = pacotes.map(p => p.remessa).join('\n');
+
+            // Template da Mensagem
+            return `Olá ${motorista},
+Você possui ${quantidade} pacotes sem movimentação há mais de ${maxDias} dias.
+Segue a lista:
+${listaCodigos}
+Por favor regularizar quanto antes.`;
+        }
+
+        function copyWaMessage() {
+            const text = waMessageText.value;
+            if (!text) {
+                alert("Selecione um motorista primeiro para gerar a mensagem.");
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Mensagem copiada para o WhatsApp!");
+            }, (err) => {
+                alert("Erro ao copiar. Tente selecionar o texto e copiar manualmente.");
+            });
         }
         
     </script>
