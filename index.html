@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Pacotes Parados (Cruzamento de Dados)</title>
+    <title>Dashboard J&T - Controle v7.0 (Filtro > 3 dias)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -11,299 +11,91 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(90deg, #d9534f, #c9302c);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: linear-gradient(90deg, #d9534f, #c9302c); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3); }
         .header h1 { margin: 0; font-size: 28px; }
         .header p { margin: 5px 0 0; font-size: 16px; opacity: 0.9; }
         
         .main-content { display: flex; flex-direction: column; gap: 20px; }
+        .upload-section, .filter-section, .stats-cards, .table-card { background-color: #ffffff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .upload-section h2, .filter-section h2, .table-card h2 { margin-top: 0; margin-bottom: 20px; color: #c9302c; font-size: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
         
-        .upload-section, .filter-section, .stats-cards, .table-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .upload-section h2, .filter-section h2, .table-card h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #c9302c;
-            font-size: 20px;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 10px;
-        }
-        
-        .upload-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .upload-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .upload-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #555;
-        }
-        input[type="file"] {
-            font-size: 16px; border: 2px dashed #ccc; border-radius: 6px;
-            padding: 10px; width: 100%; box-sizing: border-box; cursor: pointer;
-        }
-        input[type="file"]:hover { border-color: #c9302c; }
-        
-        .load-button {
-            background-color: #d9534f; color: white; padding: 12px 20px;
-            border: none; border-radius: 6px; font-size: 16px; font-weight: 600;
-            cursor: pointer; margin-top: 15px; width: 100%;
-            transition: background-color 0.2s;
-            grid-column: 1 / -1; 
-        }
+        .upload-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .upload-group { display: flex; flex-direction: column; }
+        .upload-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+        input[type="file"] { font-size: 16px; border: 2px dashed #ccc; border-radius: 6px; padding: 10px; width: 100%; box-sizing: border-box; cursor: pointer; }
+        .load-button { background-color: #d9534f; color: white; padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px; width: 100%; grid-column: 1 / -1; }
         .load-button:hover { background-color: #c9302c; }
         
-        .filter-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px;
-            align-items: end;
-        }
+        .filter-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end; }
         .filter-group { display: flex; flex-direction: column; }
-        .filter-group label {
-            display: block; font-weight: 600; margin-bottom: 8px; color: #555;
-        }
+        .quantity-filter-container { display: flex; gap: 10px; }
+        .quantity-filter-container select, .quantity-filter-container input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .quantity-filter-container input { width: 100%; }
 
-        .quantity-filter-container {
-            display: flex;
-            gap: 10px;
-        }
-        .quantity-filter-container select {
-            width: 100px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: white;
-        }
-        .quantity-filter-container input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px;
-        }
-        .stat-card {
-            background-color: #f9f9f9; border: 1px solid #e0e0e0;
-            padding: 20px; border-radius: 8px;
-        }
-        .stat-card h3 {
-            margin: 0 0 10px; font-size: 16px; color: #555;
-            text-transform: uppercase;
-        }
-        .stat-card h3 i { margin-right: 8px; width: 20px; text-align: center; }
-        .stat-card-value { font-size: 32px; font-weight: 700; }
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .stat-card { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px; border-radius: 8px; }
+        .stat-card h3 { margin: 0 0 10px; font-size: 14px; color: #555; text-transform: uppercase; }
+        .stat-card-value { font-size: 28px; font-weight: 700; }
+        .stat-card.total { border-left: 5px solid #d9534f; } .stat-card.total .stat-card-value { color: #d9534f; }
+        .stat-card.delivered { border-left: 5px solid #28a745; } .stat-card.delivered .stat-card-value { color: #28a745; }
+        .stat-card.operator { border-left: 5px solid #0275d8; } .stat-card.operator .stat-card-value { color: #0275d8; font-size: 22px; }
+        .stat-card.reason { border-left: 5px solid #5bc0de; } .stat-card.reason .stat-card-value { color: #5bc0de; font-size: 22px; }
         
-        .stat-card.total { border-left: 5px solid #d9534f; }
-        .stat-card.total .stat-card-value { color: #d9534f; }
-        
-        .stat-card.operator { border-left: 5px solid #0275d8; }
-        .stat-card.operator .stat-card-value { color: #0275d8; font-size: 24px; }
-        
-        .stat-card.reason { border-left: 5px solid #5bc0de; }
-        .stat-card.reason .stat-card-value { color: #5bc0de; font-size: 24px; }
-        
-        .rankings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
+        .rankings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
         .table-container { max-height: 500px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th, td {
-            border: 1px solid #ddd; padding: 12px 15px;
-            text-align: left; font-size: 14px;
-        }
-        th {
-            background-color: #f4f7f6; font-weight: 600; color: #333;
-            position: sticky; top: 0;
-            z-index: 10;
-        }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        
+        th, td { border: 1px solid #ddd; padding: 12px 15px; text-align: left; font-size: 14px; }
+        th { background-color: #f4f7f6; font-weight: 600; color: #333; position: sticky; top: 0; z-index: 10; }
+        tr.status-delivered { background-color: #d4edda !important; color: #155724; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-delivered { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
         th[data-sort] { cursor: pointer; user-select: none; position: relative; }
         th[data-sort]:hover { background-color: #e9ecef; }
-        th[data-sort].sort-asc::after,
-        th[data-sort].sort-desc::after {
-            content: ''; position: absolute; right: 10px; top: 50%;
-            width: 0; height: 0; border-left: 5px solid transparent;
-            border-right: 5px solid transparent; transform: translateY(-50%);
-        }
-        th[data-sort].sort-asc::after { border-bottom: 6px solid #888; }
-        th[data-sort].sort-desc::after { border-top: 6px solid #888; }
         
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 10px;
-        }
-        .table-header h2 {
-            margin: 0; padding: 0; border: none; color: #c9302c; font-size: 20px;
-        }
-        .table-actions { display: flex; gap: 10px; }
-        
-        .action-button {
-            background-color: #0275d8; color: white; border: none;
-            padding: 8px 12px; border-radius: 6px; cursor: pointer;
-            font-size: 14px; font-weight: 600; transition: background-color 0.2s;
-        }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        .table-header h2 { margin: 0; padding: 0; border: none; color: #c9302c; font-size: 20px; }
+        .table-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .action-button { background-color: #0275d8; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
         .action-button:hover { background-color: #025aa5; }
-        .action-button.export { background-color: #5cb85c; }
-        .action-button.export:hover { background-color: #449d44; }
-        
-        /* Botão WhatsApp */
-        .action-button.whatsapp { background-color: #25D366; }
-        .action-button.whatsapp:hover { background-color: #1ebc59; }
+        .action-button.export { background-color: #5cb85c; } .action-button.export:hover { background-color: #449d44; }
+        .action-button.whatsapp { background-color: #25D366; } .action-button.whatsapp:hover { background-color: #1ebc59; }
+        /* Botão roxo para a nova função */
+        .action-button.city-wa { background-color: #6f42c1; } .action-button.city-wa:hover { background-color: #59359a; }
 
-        .action-button i { margin-right: 5px; }
-
-        #copyToast {
-            visibility: hidden; min-width: 250px; background-color: #333;
-            color: #fff; text-align: center; border-radius: 4px; padding: 16px;
-            position: fixed; z-index: 1001; left: 50%; transform: translateX(-50%);
-            bottom: 30px; font-size: 17px; opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
+        #copyToast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 1001; left: 50%; transform: translateX(-50%); bottom: 30px; font-size: 17px; opacity: 0; transition: opacity 0.3s, visibility 0.3s; }
         #copyToast.show { visibility: visible; opacity: 1; }
-
-        .loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.8); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        .spinner {
-            border: 8px solid #f3f3f3; border-top: 8px solid #d9534f;
-            border-radius: 50%; width: 60px; height: 60px;
-            animation: spin 1s linear infinite;
-        }
-        .loading p { margin-top: 20px; font-size: 18px; color: #d9534f; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #d9534f; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ESTILOS DO MODAL WHATSAPP */
-        .modal-overlay {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1002;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            width: 500px;
-            max-width: 90%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-            font-size: 20px;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 10px;
-        }
-        .modal-body label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-        .modal-body select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        .modal-body textarea {
-            width: 100%;
-            height: 200px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 14px;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            border-top: 2px solid #f0f2f5;
-            padding-top: 15px;
-        }
-        .btn-close {
-            background-color: #999;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-copy {
-            background-color: #25D366;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .btn-copy:hover { background-color: #1ebc59; }
-        .btn-close:hover { background-color: #777; }
-
+        .modal-overlay { display: none; position: fixed; z-index: 1002; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; padding: 25px; border-radius: 12px; width: 600px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; }
+        .modal-header h3 { margin: 0; color: #333; font-size: 20px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        .modal-body label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .modal-body select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        .modal-body textarea { width: 100%; height: 350px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: monospace; font-size: 14px; resize: vertical; box-sizing: border-box; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 2px solid #f0f2f5; padding-top: 15px; }
+        .btn-close { background-color: #999; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-copy { background-color: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        /* Estilos para lista de mensagens por cidade */
+        .city-msg-list { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; background: #f9f9f9; }
+        .city-msg-item { background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+        .city-msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .city-msg-content { width: 100%; height: 120px; font-family: monospace; font-size: 12px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box; padding: 5px; margin-bottom: 5px; }
+        .btn-small-copy { background-color: #25D366; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-small-copy:hover { background-color: #1ebc59; }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1><i class="fas fa-exclamation-triangle"></i> Dashboard de Pacotes Parados</h1>
-            <p>Foco no Responsável pela Entrega e Motivos de Falha</p>
+            <h1><i class="fas fa-exclamation-triangle"></i> Dashboard J&T - Controle v7.0</h1>
+            <p>Foco: Pendências Críticas (> 3 dias)</p>
         </header>
 
         <main class="main-content">
@@ -311,11 +103,11 @@
                 <h2><i class="fas fa-file-excel"></i> Carregar Relatórios</h2>
                 <div class="upload-controls">
                     <div class="upload-group">
-                        <label for="fileInput1">1. Relatório de Pacotes Parados (Monitoramento)</label>
+                        <label for="fileInput1">1. Relatório de Pacotes Parados</label>
                         <input type="file" id="fileInput1" accept=".xlsx, .xls, .csv">
                     </div>
                     <div class="upload-group">
-                        <label for="fileInput2">2. Base de Dados (Exportar Carta de Porte)</label>
+                        <label for="fileInput2">2. Base de Dados (Carta de Porte)</label>
                         <input type="file" id="fileInput2" accept=".xlsx, .xls, .csv">
                     </div>
                     <button id="loadButton" class="load-button"><i class="fas fa-upload"></i> Carregar e Cruzar Dados</button>
@@ -323,128 +115,50 @@
             </section>
             
             <section class="filter-section">
-                <h2><i class="fas fa-filter"></i> Filtros</h2>
+                <h2><i class="fas fa-filter"></i> Filtros (Dashboard)</h2>
                 <div class="filter-controls">
+                    <div class="filter-group"><label>Status</label><select id="statusFilter" multiple></select></div>
+                    <div class="filter-group"><label>Dias Parados</label><select id="agingFilter" multiple></select></div>
+                    <div class="filter-group"><label>Responsável</label><select id="responsavelFilter" multiple></select></div>
+                    <div class="filter-group"><label>Motivo</label><select id="reasonFilter" multiple></select></div>
                     <div class="filter-group">
-                        <label for="agingFilter">Dias Parados</label>
-                        <select id="agingFilter" multiple></select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="responsavelFilter">Responsável pela Entrega</label>
-                        <select id="responsavelFilter" multiple></select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="reasonFilter">Motivo da Falha</label>
-                        <select id="reasonFilter" multiple></select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="cidadeFilter">Cidade Destino</label>
-                        <select id="cidadeFilter" multiple></select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="qtyValue">Volume por Responsável (Qtd)</label>
+                        <label>Volume (Qtd)</label>
                         <div class="quantity-filter-container">
-                            <select id="qtyOperator">
-                                <option value="equal">Igual a (=)</option>
-                                <option value="greater" selected>Maior que (>)</option>
-                                <option value="less">Menor que (<)</option>
-                            </select>
-                            <input type="number" id="qtyValue" placeholder="Qtd. ex: 5" min="0">
+                            <select id="qtyOperator"><option value="equal">=</option><option value="greater" selected>></option><option value="less"><</option></select>
+                            <input type="number" id="qtyValue" placeholder="Ex: 5" min="0">
                         </div>
                     </div>
                 </div>
             </section>
 
             <section class="stats-cards">
-                <div class="stat-card total">
-                    <h3><i class="fas fa-box"></i> Total de Pacotes Parados</h3>
-                    <div class="stat-card-value" id="totalPackages">0</div>
-                </div>
-                <div class="stat-card operator">
-                    <h3><i class="fas fa-user-secret"></i> Principal Responsável</h3>
-                    <div class="stat-card-value" id="topResponsavel">--</div>
-                </div>
-                <div class="stat-card reason">
-                    <h3><i class="fas fa-exclamation-circle"></i> Principal Motivo</h3>
-                    <div class="stat-card-value" id="topReason">--</div>
-                </div>
+                <div class="stat-card total"><h3><i class="fas fa-box"></i> Total Visualizado</h3><div class="stat-card-value" id="totalPackages">0</div></div>
+                <div class="stat-card delivered"><h3><i class="fas fa-check-circle"></i> Entregues</h3><div class="stat-card-value" id="deliveredPackages">0</div></div>
+                <div class="stat-card operator"><h3><i class="fas fa-user-secret"></i> Top Responsável</h3><div class="stat-card-value" id="topResponsavel">--</div></div>
+                <div class="stat-card reason"><h3><i class="fas fa-exclamation-circle"></i> Top Motivo</h3><div class="stat-card-value" id="topReason">--</div></div>
             </section>
 
             <section class="rankings-grid">
-                <div class="table-card">
-                    <h2><i class="fas fa-user-secret"></i> Ranking de Responsáveis</h2>
-                    <div class="table-container">
-                        <table id="responsavelRankTable">
-                            <thead>
-                                <tr>
-                                    <th data-sort="key">Responsável</th>
-                                    <th data-sort="count">Pacotes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="responsavelRankTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="table-card">
-                    <h2><i class="fas fa-map-marker-alt"></i> Ranking de Cidades</h2>
-                    <div class="table-container">
-                        <table id="cityRankTable">
-                            <thead>
-                                <tr>
-                                    <th data-sort="key">Cidade</th>
-                                    <th data-sort="count">Pacotes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cityRankTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="table-card">
-                    <h2><i class="fas fa-exclamation-circle"></i> Ranking de Motivos</h2>
-                    <div class="table-container">
-                        <table id="reasonRankTable">
-                            <thead>
-                                <tr>
-                                    <th data-sort="key">Motivo</th>
-                                    <th data-sort="count">Pacotes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reasonRankTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="table-card"><h2><i class="fas fa-user-secret"></i> Responsáveis</h2><div class="table-container"><table id="responsavelRankTable"><thead><tr><th data-sort="key">Nome</th><th data-sort="count">Qtd</th></tr></thead><tbody id="responsavelRankTableBody"></tbody></table></div></div>
+                <div class="table-card"><h2><i class="fas fa-map-marker-alt"></i> Cidades</h2><div class="table-container"><table id="cityRankTable"><thead><tr><th data-sort="key">Cidade</th><th data-sort="count">Qtd</th></tr></thead><tbody id="cityRankTableBody"></tbody></table></div></div>
+                <div class="table-card"><h2><i class="fas fa-exclamation-circle"></i> Motivos</h2><div class="table-container"><table id="reasonRankTable"><thead><tr><th data-sort="key">Motivo</th><th data-sort="count">Qtd</th></tr></thead><tbody id="reasonRankTableBody"></tbody></table></div></div>
             </section>
             
             <section class="table-card">
                 <div class="table-header">
-                    <h2><i class="fas fa-list-check"></i> Detalhes das Remessas</h2>
+                    <h2><i class="fas fa-list-check"></i> Detalhes</h2>
                     <div class="table-actions">
-                        <button id="waButton" class="action-button whatsapp"><i class="fab fa-whatsapp"></i> Gerar msg WhatsApp</button>
-                        <button id="copyButton" class="action-button"><i class="fas fa-copy"></i> Copiar Remessas</button>
+                        <button id="waButton" class="action-button whatsapp"><i class="fab fa-whatsapp"></i> Gerar Msg Indiv.</button>
+                        <button id="waCityButton" class="action-button city-wa"><i class="fas fa-city"></i> Cobrança por Cidade</button>
+                        
+                        <button id="copyButton" class="action-button"><i class="fas fa-copy"></i> Copiar Tabela</button>
                         <button id="exportButton" class="action-button export"><i class="fas fa-file-excel"></i> Exportar</button>
                     </div>
                 </div>
-                
                 <div class="table-container">
                     <table id="detailsTable">
-                        <thead>
-                            <tr>
-                                <th data-sort="aging_days">Dias Parados</th>
-                                <th data-sort="remessa">Remessa</th>
-                                <th data-sort="responsavel">Responsável pela Entrega</th>
-                                <th data-sort="cidade">Cidade Destino</th>
-                                <th data-sort="reason">Motivo da Falha</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detailsTableBody">
-                            <tr><td colspan="5" style="text-align: center;">Carregue os dois arquivos...</td></tr>
-                        </tbody>
+                        <thead><tr><th data-sort="is_delivered">St</th><th data-sort="aging_days">Dias</th><th data-sort="remessa">Remessa</th><th data-sort="destinatario">Destinatário</th><th data-sort="responsavel">Resp.</th><th data-sort="cidade">Cidade</th><th data-sort="reason">Motivo</th></tr></thead>
+                        <tbody id="detailsTableBody"><tr><td colspan="7" style="text-align: center;">Carregue os arquivos...</td></tr></tbody>
                     </table>
                 </div>
             </section>
@@ -453,577 +167,412 @@
     
     <div id="waModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fab fa-whatsapp" style="color:#25D366; margin-right:8px;"></i> Gerador de Mensagem</h3>
-            </div>
+            <div class="modal-header"><h3><i class="fab fa-whatsapp" style="color:#25D366;"></i> Gerador de Mensagem</h3></div>
             <div class="modal-body">
-                <label for="waDriverSelect">Selecione o Motorista:</label>
-                <select id="waDriverSelect">
-                    <option value="">-- Escolha um motorista --</option>
-                </select>
+                <p style="font-size:13px;color:#666;">* Filtro aplicado: Apenas pacotes com <b>MAIS de 3 dias</b> parados.</p>
+                <label>Motorista:</label><select id="waDriverSelect"><option value="">-- Escolha --</option></select>
+                <label>Mensagem:</label><textarea id="waMessageText" readonly></textarea>
+            </div>
+            <div class="modal-footer"><button id="waCloseBtn" class="btn-close">Fechar</button><button id="waCopyBtn" class="btn-copy">Copiar</button></div>
+        </div>
+    </div>
+
+    <div id="waCityModal" class="modal-overlay">
+        <div class="modal-content" style="width: 700px;">
+            <div class="modal-header"><h3><i class="fas fa-city" style="color:#6f42c1;"></i> Cobrança por Cidade</h3></div>
+            <div class="modal-body">
+                <p style="font-size:13px;color:#666;">* Filtro: Apenas motoristas com pacotes <b>> 3 dias</b> na cidade selecionada.</p>
+                <label>Selecione a Cidade:</label>
+                <select id="waCitySelect"><option value="">-- Escolha --</option></select>
                 
-                <label for="waMessageText">Mensagem gerada:</label>
-                <textarea id="waMessageText" readonly></textarea>
+                <div id="waCityStats" style="margin-bottom:10px; font-weight:bold; color:#d9534f; font-size:14px;"></div>
+
+                <label>Mensagens Geradas (Por Motorista):</label>
+                <div id="waCityOutput" class="city-msg-list">
+                    <div style="text-align:center; padding:20px; color:#999;">Selecione uma cidade acima para gerar as mensagens.</div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button id="waCloseBtn" class="btn-close">Fechar</button>
-                <button id="waCopyBtn" class="btn-copy"><i class="fas fa-copy"></i> Copiar Mensagem</button>
+                <button id="waCityCloseBtn" class="btn-close">Fechar</button>
+                <button id="waCityCopyAllBtn" class="btn-copy" style="background-color:#6f42c1;">Copiar Todas</button>
             </div>
         </div>
     </div>
 
-    <div class="loading" id="loading" style="display: none;">
-        <div class="spinner"></div>
-        <p>Processando dados...</p>
-    </div>
+    <div class="loading" id="loading" style="display: none;"><div class="spinner"></div><p>Processando...</p></div>
     <div id="copyToast"></div>
 
     <script>
-        // --- CONSTANTES ---
+        // CONFIG COLUNAS
         const COL_STOP_REMESSA = 'Remessa';
         const COL_STOP_AGING = 'Aging';
         const COL_STOP_MOTIVO_FALHA = 'Nome de pacote problemático';
-
         const COL_PORTE_REMESSA = 'Número de pedido JMS';
         const COL_PORTE_RESPONSAVEL = 'Responsável pela entrega';
         const COL_PORTE_CIDADE = 'Cidade Destino';
+        const COL_PORTE_STATUS = 'Marca de assinatura';
+        const COL_PORTE_DESTINATARIO = 'Destinatário';
+        const VALOR_ENTREGUE = 'RECEBIMENTO COM ASSINATURA NORMAL';
 
-        // --- VARIÁVEIS GLOBAIS ---
-        let allPackages = [];
-        let currentFilteredPackages = [];
-        let filterAging, filterResponsavel, filterReason, filterCidade;
+        let allPackages = [], currentFilteredPackages = [];
+        let filterStatus, filterAging, filterResponsavel, filterReason;
+        let driversDataMap = {}; 
+        let sortStates = { responsavelRankTable: {c:'count',o:'desc'}, reasonRankTable: {c:'count',o:'desc'}, cityRankTable: {c:'count',o:'desc'}, detailsTable: {c:'aging_days',o:'desc'} };
         
-        let driversDataMap = {}; // Armazena pacotes agrupados por motorista para o modal
+        // Cache global para a cidade selecionada atualmente (para o botão Copiar Todas)
+        let currentCityData = { city: "", drivers: {} };
 
-        let sortStates = {
-            responsavelRankTable: { column: 'count', order: 'desc' },
-            reasonRankTable: { column: 'count', order: 'desc' },
-            cityRankTable: { column: 'count', order: 'desc' },
-            detailsTable: { column: 'aging_days', order: 'desc' }
+        // DOM
+        const els = {
+            f1: document.getElementById('fileInput1'), f2: document.getElementById('fileInput2'),
+            load: document.getElementById('loadButton'), spinner: document.getElementById('loading'),
+            total: document.getElementById('totalPackages'), deliv: document.getElementById('deliveredPackages'),
+            topR: document.getElementById('topResponsavel'), topM: document.getElementById('topReason'),
+            op: document.getElementById('qtyOperator'), val: document.getElementById('qtyValue'),
+            // WA INDIVIDUAL
+            waBtn: document.getElementById('waButton'), waModal: document.getElementById('waModal'),
+            waSel: document.getElementById('waDriverSelect'), waTxt: document.getElementById('waMessageText'),
+            waClose: document.getElementById('waCloseBtn'), waCopy: document.getElementById('waCopyBtn'),
+            // WA CIDADE
+            waCityBtn: document.getElementById('waCityButton'), waCityModal: document.getElementById('waCityModal'),
+            waCitySel: document.getElementById('waCitySelect'), waCityOut: document.getElementById('waCityOutput'),
+            waCityStats: document.getElementById('waCityStats'),
+            waCityClose: document.getElementById('waCityCloseBtn'), waCityCopyAll: document.getElementById('waCityCopyAllBtn')
         };
 
-        // --- ELEMENTOS DO DOM ---
-        const fileInput1 = document.getElementById('fileInput1');
-        const fileInput2 = document.getElementById('fileInput2');
-        const loadButton = document.getElementById('loadButton');
-        const loadingSpinner = document.getElementById('loading');
+        // INIT
+        els.load.addEventListener('click', handleFileLoad);
+        setupSorters(); setupActions();
+        els.op.addEventListener('change', update); els.val.addEventListener('input', update);
         
-        const totalPackagesEl = document.getElementById('totalPackages');
-        const topResponsavelEl = document.getElementById('topResponsavel');
-        const topReasonEl = document.getElementById('topReason');
+        // EVENTOS WA INDIVIDUAL
+        els.waBtn.addEventListener('click', openWa); 
+        els.waClose.addEventListener('click', ()=>els.waModal.style.display='none');
+        els.waCopy.addEventListener('click', copyWa);
+        els.waSel.addEventListener('change', (e)=> els.waTxt.value = e.target.value ? generateMsg(e.target.value) : "");
+        
+        // EVENTOS WA CIDADE
+        els.waCityBtn.addEventListener('click', openWaByCity);
+        els.waCityClose.addEventListener('click', ()=>els.waCityModal.style.display='none');
+        els.waCitySel.addEventListener('change', (e) => renderCityMessages(e.target.value));
+        els.waCityCopyAll.addEventListener('click', copyAllCityMessages);
 
-        // Filtro de Quantidade
-        const qtyOperator = document.getElementById('qtyOperator');
-        const qtyValue = document.getElementById('qtyValue');
-        
-        // Elementos do Modal WhatsApp
-        const waButton = document.getElementById('waButton');
-        const waModal = document.getElementById('waModal');
-        const waDriverSelect = document.getElementById('waDriverSelect');
-        const waMessageText = document.getElementById('waMessageText');
-        const waCloseBtn = document.getElementById('waCloseBtn');
-        const waCopyBtn = document.getElementById('waCopyBtn');
-
-        // --- INICIALIZAÇÃO ---
-        loadButton.addEventListener('click', handleFileLoad);
-        setupHeaderSorters();
-        setupActionButtons();
-
-        qtyOperator.addEventListener('change', updateDashboard);
-        qtyValue.addEventListener('input', updateDashboard);
-        
-        // Listeners do Modal
-        waButton.addEventListener('click', openWhatsAppModal);
-        waCloseBtn.addEventListener('click', () => waModal.style.display = 'none');
-        waCopyBtn.addEventListener('click', copyWaMessage);
-        waDriverSelect.addEventListener('change', (e) => {
-            const driver = e.target.value;
-            if(driver) {
-                waMessageText.value = generateMessageForDriver(driver);
-            } else {
-                waMessageText.value = "";
-            }
-        });
-        
-        // Fechar modal clicando fora
-        window.onclick = function(event) {
-            if (event.target == waModal) {
-                waModal.style.display = "none";
-            }
+        window.onclick = (e) => { 
+            if(e.target==els.waModal) els.waModal.style.display='none'; 
+            if(e.target==els.waCityModal) els.waCityModal.style.display='none';
         }
 
-        function showLoading(show) {
-            loadingSpinner.style.display = show ? 'flex' : 'none';
-        }
+        // CORE
+        function readFile(f) { return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{try{res(XLSX.utils.sheet_to_json(XLSX.read(e.target.result,{type:'array'}).Sheets[XLSX.read(e.target.result,{type:'array'}).SheetNames[0]],{raw:false}));}catch(ER){rej(ER);}};r.readAsArrayBuffer(f);});}
         
-        function readFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    try {
-                        const data = e.target.result;
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const sheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
-                        resolve(jsonData);
-                    } catch (err) {
-                        reject(err);
-                    }
-                };
-                reader.onerror = err => reject(err);
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        // --- LÓGICA PRINCIPAL ---
-
         async function handleFileLoad() {
-            const file1 = fileInput1.files[0];
-            const file2 = fileInput2.files[0];
-
-            if (!file1 || !file2) {
-                alert("Por favor, selecione os DOIS arquivos.");
-                return;
-            }
-            
-            showLoading(true);
-
+            if(!els.f1.files[0]||!els.f2.files[0]) return alert("Selecione os dois arquivos!");
+            els.spinner.style.display='flex';
             try {
-                const [jsonData1, jsonData2] = await Promise.all([
-                    readFile(file1), 
-                    readFile(file2) 
-                ]);
-                
-                const porteDataMap = parsePorteData(jsonData2);
-                allPackages = parseAndMergeData(jsonData1, porteDataMap);
-                
-                initializeFilters();
-                
-                sortStates.detailsTable = { column: 'aging_days', order: 'desc' };
-                
-                updateDashboard();
-                
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao processar os arquivos. Verifique se são os corretos.");
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        function parsePorteData(jsonData) {
-            const porteMap = new Map();
-            jsonData.forEach(row => {
-                const remessa = row[COL_PORTE_REMESSA] ? String(row[COL_PORTE_REMESSA]).trim() : '';
-                if (remessa) {
-                    porteMap.set(remessa, {
-                        responsavel: row[COL_PORTE_RESPONSAVEL] ? String(row[COL_PORTE_RESPONSAVEL]).trim() : 'N/A',
-                        cidade: row[COL_PORTE_CIDADE] ? String(row[COL_PORTE_CIDADE]).trim() : 'N/A'
+                const [j1, j2] = await Promise.all([readFile(els.f1.files[0]), readFile(els.f2.files[0])]);
+                const map = new Map();
+                j2.forEach(r=>{
+                    const k=String(r[COL_PORTE_REMESSA]||'').trim();
+                    if(k) map.set(k,{
+                        r:String(r[COL_PORTE_RESPONSAVEL]||'N/A').trim(),
+                        c:String(r[COL_PORTE_CIDADE]||'N/A').trim(),
+                        s:String(r[COL_PORTE_STATUS]||'').trim().toUpperCase(),
+                        d:String(r[COL_PORTE_DESTINATARIO]||'N/A').trim()
                     });
-                }
-            });
-            return porteMap;
+                });
+                allPackages = j1.map(r=>{
+                    const k=String(r[COL_STOP_REMESSA]||'').trim();
+                    const d=map.get(k)||{r:'N/A',c:'N/A',s:'',d:'N/A'};
+                    const agT=String(r[COL_STOP_AGING]||'').trim();
+                    const agN=parseInt((agT.match(/(\d+)/)||['0','0'])[1]);
+                    return {
+                        remessa:k, aging:agT, aging_days:agN,
+                        reason:String(r[COL_STOP_MOTIVO_FALHA]||'PARADO SEM MOTIVO').trim(),
+                        responsavel:d.r, cidade:d.c,
+                        is_delivered:d.s.includes(VALOR_ENTREGUE), destinatario:d.d
+                    };
+                });
+                initFilters(); update();
+            } catch(e){console.error(e);alert("Erro ao ler arquivos.");}
+            finally{els.spinner.style.display='none';}
         }
 
-        function parseAndMergeData(jsonData, porteMap) {
-            return jsonData.map(row => {
-                const agingText = row[COL_STOP_AGING] ? String(row[COL_STOP_AGING]).trim() : '';
-                const match = agingText.match(/(\d+)/);
-                const agingDays = match ? parseInt(match[1], 10) : 0;
-                
-                const reasonText = row[COL_STOP_MOTIVO_FALHA] ? String(row[COL_STOP_MOTIVO_FALHA]).trim() : '';
-                const remessa = row[COL_STOP_REMESSA] ? String(row[COL_STOP_REMESSA]).trim() : '';
-                
-                const extraData = porteMap.get(remessa) || { responsavel: 'N/A', cidade: 'N/A' };
+        function initFilters() {
+            const ags = [...new Set(allPackages.map(p=>p.aging_days).filter(d=>d>0))].sort((a,b)=>a-b).map(d=>({value:d,label:`${d}d`}));
+            const resps = [...new Set(allPackages.map(p=>p.responsavel).filter(Boolean))].sort();
+            const reas = [...new Set(allPackages.map(p=>p.reason).filter(Boolean))].sort();
 
-                return {
-                    remessa: remessa,
-                    aging: agingText,
-                    aging_days: agingDays, 
-                    reason: reasonText === '' ? 'PARADO SEM MOTIVO' : reasonText,
-                    responsavel: extraData.responsavel,
-                    cidade: extraData.cidade
-                };
-            });
+            if(filterStatus) [filterStatus,filterAging,filterResponsavel,filterReason].forEach(f=>f.destroy());
+            filterStatus = new Choices('#statusFilter',{choices:[{value:'p',label:'Pendente'},{value:'d',label:'Entregue'}],removeItemButton:true});
+            filterAging = new Choices('#agingFilter',{choices:ags,removeItemButton:true});
+            filterResponsavel = new Choices('#responsavelFilter',{choices:resps.map(v=>({value:v,label:v})),removeItemButton:true});
+            filterReason = new Choices('#reasonFilter',{choices:reas.map(v=>({value:v,label:v})),removeItemButton:true});
+            ['statusFilter','agingFilter','responsavelFilter','reasonFilter'].forEach(id=>document.getElementById(id).addEventListener('change',update));
         }
 
-        function initializeFilters() {
-            const uniqueAgingMap = new Map();
-            allPackages.forEach(p => {
-                if(p.aging_days > 0) {
-                    const label = `${p.aging_days} ${p.aging_days === 1 ? 'dia parado' : 'dias parados'}`;
-                    uniqueAgingMap.set(p.aging, label); 
-                } else if (p.aging) {
-                     uniqueAgingMap.set(p.aging, p.aging);
-                }
-            });
-            const uniqueAging = Array.from(uniqueAgingMap, ([value, label]) => ({ value, label }));
-
-            const uniqueResponsaveis = [...new Set(allPackages.map(p => p.responsavel).filter(Boolean))].sort();
-            const uniqueReasons = [...new Set(allPackages.map(p => p.reason).filter(Boolean))].sort();
-            const uniqueCidades = [...new Set(allPackages.map(p => p.cidade).filter(Boolean))].sort();
-
-            if (filterAging) filterAging.destroy();
-            if (filterResponsavel) filterResponsavel.destroy();
-            if (filterReason) filterReason.destroy();
-            if (filterCidade) filterCidade.destroy();
+        function update() {
+            if(!allPackages.length) return;
+            const s=filterStatus.getValue(true), a=filterAging.getValue(true), r=filterResponsavel.getValue(true), m=filterReason.getValue(true);
+            const op=els.op.value, val=els.val.value===''?null:parseInt(els.val.value);
             
-            filterAging = new Choices('#agingFilter', {
-                choices: uniqueAging,
-                removeItemButton: true, placeholder: true, placeholderValue: 'Todos os Dias',
-            });
-            filterResponsavel = new Choices('#responsavelFilter', {
-                choices: uniqueResponsaveis.map(v => ({ value: v, label: v })),
-                removeItemButton: true, placeholder: true, placeholderValue: 'Todos os Responsáveis',
-            });
-            filterReason = new Choices('#reasonFilter', {
-                choices: uniqueReasons.map(v => ({ value: v, label: v })),
-                removeItemButton: true, placeholder: true, placeholderValue: 'Todos os Motivos',
-            });
-            filterCidade = new Choices('#cidadeFilter', {
-                choices: uniqueCidades.map(v => ({ value: v, label: v })),
-                removeItemButton: true, placeholder: true, placeholderValue: 'Todas as Cidades',
+            let res = allPackages.filter(p=>{
+                if(s.length && ((s.includes('d')&&!p.is_delivered)||(s.includes('p')&&p.is_delivered))) return false;
+                if(a.length && !a.some(x=>parseInt(x)===p.aging_days)) return false;
+                if(r.length && !r.includes(p.responsavel)) return false;
+                if(m.length && !m.includes(p.reason)) return false;
+                return true;
             });
 
-            document.getElementById('agingFilter').addEventListener('change', updateDashboard);
-            document.getElementById('responsavelFilter').addEventListener('change', updateDashboard);
-            document.getElementById('reasonFilter').addEventListener('change', updateDashboard);
-            document.getElementById('cidadeFilter').addEventListener('change', updateDashboard);
-        }
-
-        function updateDashboard() {
-            if (allPackages.length === 0) return;
-
-            const selectedAging = filterAging.getValue(true);
-            const selectedResponsaveis = filterResponsavel.getValue(true);
-            const selectedReasons = filterReason.getValue(true);
-            const selectedCidades = filterCidade.getValue(true);
-
-            const op = qtyOperator.value;
-            const valStr = qtyValue.value;
-            const val = valStr === '' ? null : parseInt(valStr, 10);
-
-            let preFilteredPackages = allPackages.filter(pkg => {
-                const agingMatch = selectedAging.length === 0 || selectedAging.includes(pkg.aging);
-                const responsavelMatch = selectedResponsaveis.length === 0 || selectedResponsaveis.includes(pkg.responsavel);
-                const reasonMatch = selectedReasons.length === 0 || selectedReasons.includes(pkg.reason);
-                const cidadeMatch = selectedCidades.length === 0 || selectedCidades.includes(pkg.cidade);
-                
-                return agingMatch && responsavelMatch && reasonMatch && cidadeMatch;
-            });
-
-            let finalFilteredPackages = preFilteredPackages;
-
-            if (val !== null && !isNaN(val)) {
-                const countByResp = {};
-                preFilteredPackages.forEach(pkg => {
-                    const r = pkg.responsavel;
-                    countByResp[r] = (countByResp[r] || 0) + 1;
-                });
-
-                finalFilteredPackages = preFilteredPackages.filter(pkg => {
-                    const count = countByResp[pkg.responsavel] || 0;
-                    if (op === 'equal') return count === val;
-                    if (op === 'greater') return count > val;
-                    if (op === 'less') return count < val;
-                    return true;
-                });
+            if(val!==null) {
+                const c={}; res.forEach(p=>c[p.responsavel]=(c[p.responsavel]||0)+1);
+                res = res.filter(p=>{const n=c[p.responsavel]||0; return op==='equal'?n===val:op==='greater'?n>val:n<val;});
             }
+            currentFilteredPackages = res;
             
-            currentFilteredPackages = finalFilteredPackages;
+            const rc={}, mc={}, cc={};
+            res.forEach(p=>{ if(p.responsavel)rc[p.responsavel]=(rc[p.responsavel]||0)+1; if(p.reason)mc[p.reason]=(mc[p.reason]||0)+1; if(p.cidade)cc[p.cidade]=(cc[p.cidade]||0)+1; });
             
-            const responsavelCounts = {};
-            const reasonCounts = {};
-            const cityCounts = {}; 
+            els.total.textContent = res.length;
+            els.deliv.textContent = res.filter(p=>p.is_delivered).length;
+            els.topR.textContent = getTop(rc); els.topM.textContent = getTop(mc);
             
-            finalFilteredPackages.forEach(pkg => {
-                if (pkg.responsavel) {
-                    responsavelCounts[pkg.responsavel] = (responsavelCounts[pkg.responsavel] || 0) + 1;
-                }
-                if (pkg.reason) {
-                    reasonCounts[pkg.reason] = (reasonCounts[pkg.reason] || 0) + 1;
-                }
-                if (pkg.cidade) {
-                    cityCounts[pkg.cidade] = (cityCounts[pkg.cidade] || 0) + 1;
-                }
-            });
-
-            renderCards(finalFilteredPackages);
-            renderRankTable('responsavelRankTable', responsavelCounts);
-            renderRankTable('reasonRankTable', reasonCounts);
-            renderRankTable('cityRankTable', cityCounts);
-            renderDetailsTable(finalFilteredPackages);
+            renderTable('responsavelRankTable',rc); renderTable('reasonRankTable',mc); renderTable('cityRankTable',cc); renderDetails(res);
         }
 
-        function renderCards(filteredPackages) {
-            totalPackagesEl.textContent = filteredPackages.length;
-            topResponsavelEl.textContent = getTopItem(filteredPackages, 'responsavel');
-            topReasonEl.textContent = getTopItem(filteredPackages, 'reason');
-        }
+        function getTop(o){const k=Object.keys(o).sort((a,b)=>o[b]-o[a])[0]; return k?(k.length>15?k.substr(0,15)+'...':k):'--';}
         
-        function getTopItem(packages, key) {
-            if (packages.length === 0) return '--';
-            const counts = {};
-            let maxCount = 0;
-            let topItem = '--';
-            
-            packages.forEach(pkg => {
-                const item = pkg[key];
-                if (item) {
-                    counts[item] = (counts[item] || 0) + 1;
-                    if (counts[item] > maxCount) {
-                        maxCount = counts[item];
-                        topItem = item;
-                    }
-                }
-            });
-            return topItem.length > 20 ? topItem.substring(0, 20) + '...' : topItem;
+        function renderTable(id, data) {
+            const b = document.getElementById(id+'Body'); b.innerHTML='';
+            const arr = Object.keys(data).map(k=>({key:k,count:data[k]}));
+            const {c,o} = sortStates[id];
+            arr.sort((x,y)=>(o==='asc'?1:-1)*(typeof x[c]==='string'?x[c].localeCompare(y[c]):x[c]-y[c]));
+            if(!arr.length) b.innerHTML='<tr><td colspan="2">Vazio</td></tr>';
+            else arr.forEach(i=>b.innerHTML+=`<tr><td>${i.key}</td><td>${i.count}</td></tr>`);
+            updateSortUI(id);
         }
 
-        function renderRankTable(tableId, dataCounts) {
-            const tableBody = document.getElementById(`${tableId}Body`);
-            tableBody.innerHTML = "";
+        function renderDetails(list) {
+            const b = document.getElementById('detailsTableBody'); b.innerHTML='';
+            const {c,o} = sortStates.detailsTable;
+            list.sort((x,y)=>{
+                let vx=x[c], vy=y[c];
+                if(c==='aging_days'){vx=vx||0;vy=vy||0;} else {vx=String(vx).toLowerCase();vy=String(vy).toLowerCase();}
+                return (o==='asc'?1:-1)*(vx<vy?-1:vx>vy?1:0);
+            });
+            updateSortUI('detailsTable');
+            if(!list.length) return b.innerHTML='<tr><td colspan="7" align="center">Vazio</td></tr>';
+            list.slice(0,500).forEach(p=>{
+                b.innerHTML+=`<tr class="${p.is_delivered?'status-delivered':''}">
+                    <td><span class="badge ${p.is_delivered?'badge-delivered':'badge-pending'}">${p.is_delivered?'OK':'PEND'}</span></td>
+                    <td>${p.aging_days}d</td><td><b>${p.remessa}</b></td><td>${p.destinatario}</td><td>${p.responsavel}</td><td>${p.cidade}</td><td>${p.reason}</td>
+                </tr>`;
+            });
+        }
 
-            let rankArray = Object.keys(dataCounts).map(key => ({
-                key: key,
-                count: dataCounts[key]
+        function cleanMotivo(m) {
+            if(!m) return "S/ Motivo";
+            const upper = m.toUpperCase();
+            if(upper.includes("AUSÊNCIA") || upper.includes("AUSENCIA")) return "Ausente";
+            if(upper.includes("PARADO SEM MOTIVO")) return "Parado";
+            if(upper.includes("ENDEREÇO") || upper.includes("ENDERECO")) return "End. Incorreto";
+            if(upper.includes("ENCOMENDA.EXPEDIDA")) return "Parado"; 
+            if(upper.includes("CLIENTE DESCONHECIDO")) return "Desc. no Local";
+            if(upper.includes("RECUSADO")) return "Recusado";
+            return m.length > 15 ? m.substring(0, 15) + "." : m;
+        }
+
+        function cleanNome(n) {
+            if(!n || n === 'N/A') return "S/ Nome";
+            const parts = n.split(' ');
+            if(parts.length > 2) {
+                let short = parts[0] + " " + parts[1];
+                if(short.length > 20) return n.substring(0, 20) + ".";
+                return short;
+            }
+            return n.length > 20 ? n.substring(0, 20) + "." : n;
+        }
+
+        // --- GERADOR COM FILTRO > 3 DIAS (INDIVIDUAL) ---
+        function openWa() {
+            if(!currentFilteredPackages.length) return alert("Sem dados.");
+            driversDataMap={};
+            // Aqui agrupa todos pendentes, o filtro ocorre na geração da msg
+            currentFilteredPackages.forEach(p=>{ if(!p.is_delivered) (driversDataMap[p.responsavel]||(driversDataMap[p.responsavel]=[])).push(p); });
+            els.waSel.innerHTML='<option value="">-- Escolha --</option>';
+            Object.keys(driversDataMap).sort().forEach(k=>els.waSel.innerHTML+=`<option value="${k}">${k} (${driversDataMap[k].length} total)</option>`);
+            if(!els.waSel.children.length) alert("Tudo entregue!");
+            else els.waModal.style.display='flex';
+        }
+
+        function generateMsg(driver) {
+            let allPkgs = driversDataMap[driver];
+            const criticalPkgs = allPkgs.filter(p => p.aging_days > 3);
+            criticalPkgs.sort((a,b)=>b.aging_days-a.aging_days);
+
+            if (criticalPkgs.length === 0) {
+                return `Olá ${driver},\n\nNo momento, você não possui pacotes críticos (acima de 3 dias) pendentes na lista filtrada.`;
+            }
+
+            const maxD = criticalPkgs[0].aging_days;
+            
+            const list = criticalPkgs.map(p => {
+                const motivoClean = cleanMotivo(p.reason);
+                const nomeClean = cleanNome(p.destinatario);
+                return `📦 ${p.remessa} | ${nomeClean} (${p.aging_days}d) - ${motivoClean}`;
+            }).join('\n');
+
+            return `Olá ${driver}, tudo bem?
+
+Você possui ${criticalPkgs.length} pacotes críticos sem movimentação (antigo: ${maxD} dias).
+Lista (acima de 3 dias):
+${list}
+
+⚠️ Pacotes +5 dias são extraviados auto.
+Dúvidas, contate a base.`;
+        }
+
+        function copyWa() {
+            if(!els.waTxt.value) return;
+            navigator.clipboard.writeText(els.waTxt.value).then(showToast);
+        }
+
+        function showToast() {
+            const t=document.getElementById('copyToast'); t.innerText="Copiado!"; t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'),2000);
+        }
+
+        // --- NOVA FUNÇÃO: GERADOR POR CIDADE (WHATSAPP) - TEXTO MODIFICADO ---
+        function openWaByCity() {
+            const criticalTotal = currentFilteredPackages.filter(p => !p.is_delivered && p.aging_days > 3);
+            if(!criticalTotal.length) return alert("Nenhum pacote crítico (> 3 dias) pendente no filtro atual.");
+            const cities = [...new Set(criticalTotal.map(p => p.cidade).filter(c => c && c !== 'N/A'))].sort();
+            
+            els.waCitySel.innerHTML = '<option value="">-- Escolha a Cidade --</option>';
+            cities.forEach(c => {
+                els.waCitySel.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+
+            els.waCityOut.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Selecione uma cidade acima para gerar as mensagens.</div>';
+            els.waCityStats.innerHTML = '';
+            els.waCityModal.style.display = 'flex';
+            currentCityData = { city: "", drivers: {} };
+        }
+
+        function renderCityMessages(city) {
+            if(!city) {
+                els.waCityOut.innerHTML = '';
+                els.waCityStats.innerHTML = '';
+                currentCityData = { city: "", drivers: {} };
+                return;
+            }
+
+            // Filtra pacotes críticos (>3 dias) da cidade
+            const cityPkgs = currentFilteredPackages.filter(p => p.cidade === city && !p.is_delivered && p.aging_days > 3);
+            
+            // Agrupa por motorista
+            const driverMap = {};
+            cityPkgs.forEach(p => {
+                if(!driverMap[p.responsavel]) driverMap[p.responsavel] = [];
+                driverMap[p.responsavel].push(p);
+            });
+            const drivers = Object.keys(driverMap).sort();
+            
+            // Salva no cache global para o botão Copiar Todas
+            currentCityData = { city: city, drivers: driverMap };
+
+            els.waCityStats.innerHTML = `Cidade: ${city} | ${drivers.length} Motoristas com pendências críticas | Total Pacotes: ${cityPkgs.length}`;
+            els.waCityOut.innerHTML = '';
+
+            // Cabeçalho fixo da cidade (usado em cada bloco e no Copiar Todas)
+            const cityHeader = `🚨 *MONITORAMENTO - ${city}* 🚨\nPacotes parados há mais de 3 dias - Priorizar entrega ou Fazer Devolução\n`;
+            const separator = `➖➖➖➖➖➖➖➖➖➖\n`;
+
+            drivers.forEach(drv => {
+                const pkgs = driverMap[drv];
+                pkgs.sort((a,b) => b.aging_days - a.aging_days);
+
+                // Monta o bloco do motorista conforme solicitado
+                // "🚚 *MOTORISTA: NOME* (QTD pendências)"
+                let blockStr = `🚚 *MOTORISTA: ${drv}* (${pkgs.length} pendências)\n`;
+                
+                // Lista de pacotes
+                blockStr += pkgs.map(p => {
+                    // Formato: 📦 REMESSA | DESTINATARIO (DIAS dias) - MOTIVO
+                    return `📦 ${p.remessa} | ${cleanNome(p.destinatario)} (${p.aging_days} dias) - ${cleanMotivo(p.reason)}`;
+                }).join('\n');
+
+                // Monta a mensagem completa para a caixa de texto individual (Caso queira enviar só para ele)
+                const fullIndividualMsg = cityHeader + separator + blockStr;
+
+                const div = document.createElement('div');
+                div.className = 'city-msg-item';
+                div.innerHTML = `
+                    <div class="city-msg-header">
+                        <span><i class="fas fa-user"></i> ${drv} (${pkgs.length} pct)</span>
+                        <button class="btn-small-copy" onclick="copyText(this)">Copiar</button>
+                    </div>
+                    <textarea class="city-msg-content" readonly>${fullIndividualMsg}</textarea>
+                `;
+                els.waCityOut.appendChild(div);
+            });
+        }
+
+        window.copyText = function(btn) {
+            const txt = btn.parentElement.nextElementSibling.value;
+            navigator.clipboard.writeText(txt).then(() => {
+                btn.textContent = "Copiado!";
+                setTimeout(() => btn.textContent = "Copiar", 1500);
+            });
+        }
+
+        function copyAllCityMessages() {
+            const { city, drivers } = currentCityData;
+            if(!city || !Object.keys(drivers).length) return alert("Nenhuma cidade selecionada ou sem dados.");
+
+            // Reconstrói a string completa limpa (Cabeçalho único + Separadores)
+            let fullText = `🚨 *MONITORAMENTO - ${city}* 🚨\nPacotes parados há mais de 3 dias - Priorizar entrega ou Fazer Devolução\n\n`;
+            
+            const driverList = Object.keys(drivers).sort();
+            
+            driverList.forEach(drv => {
+                const pkgs = drivers[drv];
+                pkgs.sort((a,b) => b.aging_days - a.aging_days);
+
+                fullText += `➖➖➖➖➖➖➖➖➖➖\n`;
+                fullText += `🚚 *MOTORISTA: ${drv}* (${pkgs.length} pendências)\n`;
+                
+                const items = pkgs.map(p => {
+                    return `📦 ${p.remessa} | ${cleanNome(p.destinatario)} (${p.aging_days} dias) - ${cleanMotivo(p.reason)}`;
+                }).join('\n');
+                
+                fullText += items + `\n`; // Quebra de linha extra entre motoristas? O exemplo tinha separador.
+                fullText += `\n`; // Espaço antes do próximo separador
+            });
+
+            navigator.clipboard.writeText(fullText).then(showToast);
+        }
+
+        function setupSorters() {
+            document.querySelectorAll('th[data-sort]').forEach(th=>th.addEventListener('click',()=>{
+                const id=th.closest('table').id, k=th.dataset.sort;
+                sortStates[id].o = (sortStates[id].c===k && sortStates[id].o==='asc') ? 'desc':'asc';
+                sortStates[id].c = k; update();
             }));
-
-            const { column, order } = sortStates[tableId];
-            rankArray.sort((a, b) => {
-                let valA = a[column]; let valB = b[column];
-                if (typeof valA === 'string') valA = valA.toLowerCase();
-                if (typeof valB === 'string') valB = valB.toLowerCase();
-                if (valA < valB) return order === 'asc' ? -1 : 1;
-                if (valA > valB) return order === 'asc' ? 1 : -1;
-                return 0;
+        }
+        function updateSortUI(id){
+            const t=document.getElementById(id), s=sortStates[id];
+            t.querySelectorAll('th').forEach(h=>h.className='');
+            t.querySelector(`th[data-sort="${s.c}"]`).classList.add(s.o==='asc'?'sort-asc':'sort-desc');
+        }
+        function setupActions(){
+            document.getElementById('exportButton').addEventListener('click',()=>{
+                const ws = XLSX.utils.json_to_sheet(currentFilteredPackages.map(p=>({Status:p.is_delivered?'ENTREGUE':'PENDENTE',Dias:p.aging_days,Remessa:p.remessa,Destinatario:p.destinatario,Resp:p.responsavel,Motivo:p.reason})));
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Dados"); XLSX.writeFile(wb,"Relatorio_Clean.xlsx");
             });
-            
-            updateSortUI(tableId, sortStates[tableId]);
-
-            if (rankArray.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center;">Nenhum dado encontrado.</td></tr>';
-                return;
-            }
-
-            rankArray.forEach(item => {
-                const row = `
-                    <tr>
-                        <td>${item.key}</td>
-                        <td>${item.count}</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
+            document.getElementById('copyButton').addEventListener('click',()=>{
+                navigator.clipboard.writeText(currentFilteredPackages.map(p=>p.remessa).join('\n')).then(()=>alert('Códigos Copiados!'));
             });
         }
-        
-        function renderDetailsTable(filteredPackages) {
-            const tableBody = document.getElementById('detailsTableBody');
-            tableBody.innerHTML = "";
-
-            const { column, order } = sortStates.detailsTable;
-            filteredPackages.sort((a, b) => {
-                let valA = a[column]; let valB = b[column];
-                if (column === 'aging_days') {
-                    valA = valA || 0; valB = valB || 0;
-                } else if (typeof valA === 'string') {
-                    valA = valA.toLowerCase(); valB = valB.toLowerCase();
-                }
-
-                if (valA < valB) return order === 'asc' ? -1 : 1;
-                if (valA > valB) return order === 'asc' ? 1 : -1;
-                return 0;
-            });
-            
-            updateSortUI('detailsTable', sortStates.detailsTable);
-
-            if (filteredPackages.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum pacote encontrado para os filtros selecionados.</td></tr>';
-                return;
-            }
-            
-            const limitedPackages = filteredPackages.slice(0, 500);
-
-            limitedPackages.forEach(pkg => {
-                const diasTexto = pkg.aging_days === 1 ? 'dia parado' : 'dias parados';
-                const displayText = pkg.aging_days > 0 ? `${pkg.aging_days} ${diasTexto}` : pkg.aging;
-                
-                const rowHtml = `
-                    <tr>
-                        <td>${displayText}</td>
-                        <td>${pkg.remessa}</td>
-                        <td>${pkg.responsavel}</td>
-                        <td>${pkg.cidade}</td>
-                        <td>${pkg.reason}</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += rowHtml;
-            });
-            
-            if (filteredPackages.length > 500) {
-                tableBody.innerHTML += '<tr><td colspan="5" style="text-align: center; font-style: italic;">Exibindo 500 de ${filteredPackages.length} remessas.</td></tr>';
-            }
-        }
-        
-        function setupHeaderSorters() {
-            document.querySelectorAll('th[data-sort]').forEach(th => {
-                th.addEventListener('click', () => {
-                    const columnKey = th.dataset.sort;
-                    const tableId = th.closest('table').id;
-                    const state = sortStates[tableId];
-                    
-                    if (state.column === columnKey) {
-                        state.order = state.order === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        state.column = columnKey;
-                        state.order = (tableId.includes('RankTable')) ? 'desc' : 'asc';
-                    }
-                    updateDashboard();
-                });
-            });
-        }
-        
-        function updateSortUI(tableId, state) {
-            const table = document.getElementById(tableId);
-            if (!table) return;
-            
-            table.querySelectorAll('th[data-sort]').forEach(th => {
-                th.classList.remove('sort-asc', 'sort-desc');
-            });
-            
-            const activeTh = table.querySelector(`th[data-sort="${state.column}"]`);
-            if (activeTh) {
-                activeTh.classList.add(state.order === 'asc' ? 'sort-asc' : 'sort-desc');
-            }
-        }
-        
-        function setupActionButtons() {
-            document.getElementById('exportButton').addEventListener('click', exportData);
-            document.getElementById('copyButton').addEventListener('click', copyRemessas);
-        }
-        
-        function exportData() {
-            if (currentFilteredPackages.length === 0) {
-                alert("Não há dados para exportar. Aplique filtros ou carregue um arquivo.");
-                return;
-            }
-            
-            const dataToExport = currentFilteredPackages.map(pkg => {
-                const diasTexto = pkg.aging_days === 1 ? 'dia parado' : 'dias parados';
-                const displayText = pkg.aging_days > 0 ? `${pkg.aging_days} ${diasTexto}` : pkg.aging;
-                
-                return {
-                    "Dias Parados": displayText,
-                    "Remessa": pkg.remessa,
-                    "Responsável pela Entrega": pkg.responsavel,
-                    "Cidade Destino": pkg.cidade,
-                    "Motivo da Falha": pkg.reason
-                }
-            });
-
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Pacotes Parados");
-            
-            XLSX.writeFile(wb, "relatorio_pacotes_parados.xlsx");
-        }
-        
-        function copyRemessas() {
-            if (currentFilteredPackages.length === 0) {
-                alert("Não há remessas para copiar.");
-                return;
-            }
-            
-            const remessaList = currentFilteredPackages.map(pkg => pkg.remessa).join('\n');
-            
-            navigator.clipboard.writeText(remessaList).then(() => {
-                showToast("Códigos de remessa copiados!");
-            }, (err) => {
-                alert("Erro ao copiar. Tente novamente.");
-            });
-        }
-        
-        function showToast(message) {
-            const toast = document.getElementById('copyToast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // --- FUNÇÕES NOVAS PARA WHATSAPP ---
-
-        function openWhatsAppModal() {
-            if (currentFilteredPackages.length === 0) {
-                alert("Não há dados carregados para gerar mensagens.");
-                return;
-            }
-
-            // 1. Agrupar dados visíveis por motorista
-            driversDataMap = {};
-            currentFilteredPackages.forEach(pkg => {
-                const driver = pkg.responsavel;
-                if (!driversDataMap[driver]) {
-                    driversDataMap[driver] = [];
-                }
-                driversDataMap[driver].push(pkg);
-            });
-
-            // 2. Preencher o Select
-            waDriverSelect.innerHTML = '<option value="">-- Escolha um motorista --</option>';
-            const sortedDrivers = Object.keys(driversDataMap).sort();
-            
-            sortedDrivers.forEach(driver => {
-                if(driver && driver !== 'N/A') {
-                    const opt = document.createElement('option');
-                    opt.value = driver;
-                    opt.textContent = `${driver} (${driversDataMap[driver].length} pacotes)`;
-                    waDriverSelect.appendChild(opt);
-                }
-            });
-
-            // 3. Limpar textarea e mostrar modal
-            waMessageText.value = "";
-            waModal.style.display = "flex";
-        }
-
-        function generateMessageForDriver(motorista) {
-            if (!driversDataMap[motorista]) return "";
-
-            const pacotes = driversDataMap[motorista];
-            const quantidade = pacotes.length;
-            
-            // Encontrar o maior número de dias parados
-            const maxDias = Math.max(...pacotes.map(p => p.aging_days));
-            
-            // Listar códigos (um por linha)
-            const listaCodigos = pacotes.map(p => p.remessa).join('\n');
-
-            // Template da Mensagem
-            return `Olá ${motorista},
-Você possui ${quantidade} pacotes sem movimentação há mais de ${maxDias} dias.
-Segue a lista:
-${listaCodigos}
-Por favor regularizar quanto antes.`;
-        }
-
-        function copyWaMessage() {
-            const text = waMessageText.value;
-            if (!text) {
-                alert("Selecione um motorista primeiro para gerar a mensagem.");
-                return;
-            }
-
-            navigator.clipboard.writeText(text).then(() => {
-                showToast("Mensagem copiada para o WhatsApp!");
-            }, (err) => {
-                alert("Erro ao copiar. Tente selecionar o texto e copiar manualmente.");
-            });
-        }
-        
     </script>
 </body>
 </html>
